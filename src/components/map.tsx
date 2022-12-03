@@ -4,6 +4,7 @@ import {
   Marker,
   DirectionsRenderer,
   Circle,
+  MarkerClusterer,
 } from "@react-google-maps/api";
 import Places from "./places";
 import Distance from "./distance";
@@ -17,7 +18,7 @@ export default function Map() {
   const [directions, setDirections] = useState<DirectionsResult>();
   const mapRef = useRef<GoogleMap>();
   const center = useMemo<LatLngLiteral>(
-    () => ({ lat: 43.45, lng: -80.49 }),
+    () => ({ lat: 52.377956, lng: 4.897070 }),
     []
   );
   const options = useMemo<MapOptions>(
@@ -28,7 +29,8 @@ export default function Map() {
     }),
     []
   );
-  const onLoad = useCallback((map: GoogleMap | undefined) => (mapRef.current = map), []);
+  const onLoad = useCallback((map) => (mapRef.current = map), []);
+  const houses = useMemo(() => generateHouses(center), [center]);
 
   const fetchDirections = (house: LatLngLiteral) => {
     if (!office) return;
@@ -51,14 +53,14 @@ export default function Map() {
   return (
     <div className="container">
       <div className="controls">
-        <h1>Commute?</h1>
+        <h1>Sublocality of the campaign ?</h1>
         <Places
           setOffice={(position) => {
             setOffice(position);
             mapRef.current?.panTo(position);
           }}
         />
-        {!office && <p>Enter the address of your office.</p>}
+        {!office && <p>Enter the area of the campaign.</p>}
         {directions && <Distance leg={directions.routes[0].legs[0]} />}
       </div>
       <div className="map">
@@ -67,6 +69,7 @@ export default function Map() {
           center={center}
           mapContainerClassName="map-container"
           options={options}
+          onLoad={onLoad}
         >
           {directions && (
             <DirectionsRenderer
@@ -87,6 +90,21 @@ export default function Map() {
                 position={office}
                 icon="https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"
               />
+
+              <MarkerClusterer>
+                {(clusterer) =>
+                  houses.map((house) => (
+                    <Marker
+                      key={house.lat}
+                      position={house}
+                      clusterer={clusterer}
+                      onClick={() => {
+                        fetchDirections(house);
+                      }}
+                    />
+                  ))
+                }
+              </MarkerClusterer>
 
               <Circle center={office} radius={15000} options={closeOptions} />
               <Circle center={office} radius={30000} options={middleOptions} />
@@ -127,4 +145,16 @@ const farOptions = {
   fillOpacity: 0.05,
   strokeColor: "#FF5252",
   fillColor: "#FF5252",
+};
+
+const generateHouses = (position: LatLngLiteral) => {
+  const _houses: Array<LatLngLiteral> = [];
+  for (let i = 0; i < 100; i++) {
+    const direction = Math.random() < 0.5 ? -2 : 2;
+    _houses.push({
+      lat: position.lat + Math.random() / direction,
+      lng: position.lng + Math.random() / direction,
+    });
+  }
+  return _houses;
 };
