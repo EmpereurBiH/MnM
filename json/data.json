@@ -1,0 +1,24 @@
+{
+    "campaign" :{
+        "name": "MyfirstCampaign",
+        "description": "This is my first campaign",
+        "area": 
+        [ 
+            {
+                "pathid": 1,
+                "lat": 52.5,
+                "lng": 7
+            },
+            {
+                "pathid": 2,
+                "lat": 53,
+                "lng": 4
+                 },
+            {
+                "pathid": 3,
+                "lat": 52,
+                "lng": 3
+            }
+        ]
+    }
+}
